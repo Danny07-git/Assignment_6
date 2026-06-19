@@ -92,6 +92,102 @@ document.addEventListener("DOMContentLoaded", function () {
             .join("");
     }
 
+    function setCookie(name, value, days) {
+    let expires = "";
+
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+        expires = "; expires=" + date.toUTCString();
+    }
+
+    document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function getCookie(name) {
+    const cookieName = name + "=";
+    const cookies = document.cookie.split(";");
+
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+
+        if (cookie.indexOf(cookieName) === 0) {
+            return cookie.substring(cookieName.length);
+        }
+    }
+
+    return "";
+}
+
+function checkUsername() {
+    const username = getCookie("username");
+
+    if (username) {
+        document.getElementById("username").value = username;
+        newPlayerButton.classList.remove("hidden");
+    }
+}
+
+function calculateScore() {
+    let score = 0;
+
+    const answers = document.querySelectorAll(
+        'input[type="radio"]:checked'
+    );
+
+    answers.forEach(answer => {
+        if (answer.dataset.correct === "true") {
+            score++;
+        }
+    });
+
+    return score;
+}
+
+function saveScore(username, score) {
+    let scores =
+        JSON.parse(localStorage.getItem("scores")) || [];
+
+    scores.push({
+        username,
+        score
+    });
+
+    localStorage.setItem(
+        "scores",
+        JSON.stringify(scores)
+    );
+}
+
+function displayScores() {
+    const tbody =
+        document.querySelector("#score-table tbody");
+
+    tbody.innerHTML = "";
+
+    const scores =
+        JSON.parse(localStorage.getItem("scores")) || [];
+
+    scores.forEach(entry => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${entry.username}</td>
+            <td>${entry.score}</td>
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+
+function newPlayer() {
+    setCookie("username", "", -1);
+
+    document.getElementById("username").value = "";
+
+    newPlayerButton.classList.add("hidden");
+}
+
     // Event listeners for form submission and new player button
     form.addEventListener("submit", handleFormSubmit);
     newPlayerButton.addEventListener("click", newPlayer);
